@@ -1,1 +1,2 @@
 # shorts_test
+init
