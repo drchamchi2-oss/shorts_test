@@ -1,44 +1,55 @@
 # shorts_test
 
-> Draft README for OSS preparation. Replace bracketed placeholders before making the repository public or using this in an application.
+> Draft README for OSS preparation. This assumes the project direction is a short-form video workflow testing utility. Replace anything inaccurate before public release.
 
 ## Overview
 
-`shorts_test` is a [short one-sentence description of what the project does].
+`shorts_test` is being prepared as a public open-source utility for testing repeatable short-form video workflow automation.
 
-The project is intended for [target users] who need [specific problem solved].
+The intended users are maintainers, creators, and developers who want a small, inspectable project for validating short-form video processing or automation workflows before using them in larger systems.
 
-## Why This Exists
+## Project Goals
 
-This repository is being prepared as a public open-source project. Before publication, the maintainer should replace placeholders with accurate project details, usage instructions, and maintenance status.
+- Provide a simple place to collect repeatable test cases for short-form video workflows.
+- Keep workflow examples easy to inspect, run, and improve.
+- Make issue triage and pull request review practical for a small OSS project.
+- Document project behavior clearly enough for external contributors.
 
-## Features
+## Planned Features
 
-- [Feature 1]
-- [Feature 2]
-- [Feature 3]
+- Reproducible workflow examples
+- Test-case documentation
+- Issue and pull request templates
+- Maintainer checklist for safe public collaboration
+- Security and licensing review before public release
 
 ## Installation
 
+Not finalized yet. Add the real setup command after the project code and dependencies are confirmed.
+
 ```bash
-# Add install steps here
+# TODO: add install steps
 ```
 
 ## Usage
 
+Not finalized yet. Add the smallest working example before submitting the OSS application.
+
 ```bash
-# Add the simplest working usage example here
+# TODO: add usage example
 ```
 
 ## Project Status
 
-Current status: draft / preparation.
+Current status: draft / OSS preparation.
 
-Use one of these labels before public release:
+Do not submit this repository for an OSS program until:
 
-- Experimental: APIs and behavior may change.
-- Beta: usable, but still changing.
-- Stable: suitable for normal use.
+- the repository is public,
+- the README describes real working functionality,
+- the license is finalized,
+- the repository has been reviewed for secrets and private data,
+- and the application text matches the actual project state.
 
 ## Maintenance
 
@@ -58,8 +69,8 @@ Contributions are welcome once the repository is public and the maintainer has c
 
 ## Security
 
-Do not publish secrets, private datasets, credentials, internal URLs, or proprietary assets in this repository. See `SECURITY.draft.md` for a draft reporting policy.
+Do not publish secrets, private datasets, credentials, internal URLs, proprietary assets, or third-party files without redistribution rights. See `SECURITY.draft.md` for a draft reporting policy.
 
 ## License
 
-License is not finalized. See `LICENSE-MIT.draft` as one possible option. Confirm the license before making the repository public.
+Recommended license: MIT. See `LICENSE-MIT.draft` as the starting point. Confirm the copyright holder before replacing it with a real `LICENSE` file.
