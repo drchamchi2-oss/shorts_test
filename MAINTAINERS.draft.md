@@ -1,12 +1,15 @@
 # Maintainers Draft
 
-This file documents who maintains the project and what responsibilities are expected. Replace placeholders before public release.
+This file documents who maintains the project and what responsibilities are expected. Review before public release.
 
 ## Current Maintainer
 
+- Name: Kim hyosung
 - GitHub: `drchamchi2-oss`
 - Role: primary maintainer / repository owner
 - Scope: issue triage, pull request review, release preparation, documentation, and project direction
+
+Note: The ChatGPT account email used for the Codex OSS application is `drchamchi2@gmail.com`. Do not publish that email in public project files unless the maintainer intentionally wants it public.
 
 ## Maintainer Responsibilities
 
