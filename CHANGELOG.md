@@ -16,6 +16,7 @@ All notable changes to this project are documented here.
 - Helper-function tests for path, JSON, and caption behavior.
 - Fixture-based tests for subtitle timing edge cases.
 - Dry-run mode for script and media-attribution checks.
+- Focused media and rendering helper modules.
 
 ### Security
 
