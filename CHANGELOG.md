@@ -14,6 +14,7 @@ All notable changes to this project are documented here.
 - Local doctor script for runtime prerequisite checks.
 - Public roadmap for near-term maintenance issues.
 - Helper-function tests for path, JSON, and caption behavior.
+- Fixture-based tests for subtitle timing edge cases.
 
 ### Security
 
