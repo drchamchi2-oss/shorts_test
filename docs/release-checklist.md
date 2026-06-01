@@ -7,9 +7,9 @@ Use this checklist before tagging a public release.
 Run the same checks used by CI:
 
 ```bash
-python -m py_compile main_gpt.py
+python -m py_compile main_gpt.py scripts/doctor.py
 python -m pytest
-python -m bandit -r main_gpt.py -x tests -ll -s B324
+python -m bandit -r main_gpt.py scripts -x tests -ll -s B324
 python -m pip_audit -r requirements.txt
 ```
 
