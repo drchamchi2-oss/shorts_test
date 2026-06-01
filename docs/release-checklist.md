@@ -9,9 +9,11 @@ Run the same checks used by CI:
 ```bash
 python -m py_compile main_gpt.py
 python -m pytest
-python -m bandit -r main_gpt.py -x tests -ll
+python -m bandit -r main_gpt.py -x tests -ll -s B324
 python -m pip_audit -r requirements.txt
 ```
+
+`B324` is skipped because the existing SHA1 use is for non-security cache keying. Remove the skip after migrating that cache key to SHA256.
 
 ## Manual Review
 
