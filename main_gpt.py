@@ -19,8 +19,6 @@ import re
 import shutil
 import subprocess
 import time
-import hashlib
-from urllib.parse import urlparse, unquote, quote
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple, Optional, Dict, Any
@@ -34,6 +32,16 @@ except Exception:  # pragma: no cover - optional dependency
     load_dotenv = None
 
 from openai import OpenAI
+
+from shorts_media import (
+    attribution_entries_from_script,
+    cache_key_for_url,
+    media_attribution_entry,
+    media_provider_for_url,
+    normalize_wikimedia_url,
+    write_media_attribution,
+)
+from shorts_rendering import allocate_chunk_times, ass_escape, fmt_ass_time
 
 # =========================
 # 기본 설정
@@ -844,36 +852,6 @@ def pick_best_stock_image(pexels_key: Optional[str], pixabay_key: Optional[str],
     return hits[0].get("url")
 
 
-def normalize_wikimedia_url(url: str, width: int = 1080) -> str:
-    try:
-        u = urlparse(url)
-        host = (u.netloc or "").lower()
-        path = u.path or ""
-        if "wikimedia.org" not in host:
-            return url
-        filename = None
-        if "/wikipedia/commons/thumb/" in path:
-            parts = path.split("/")
-            ti = None
-            for i, p in enumerate(parts):
-                if p == "thumb":
-                    ti = i
-                    break
-            if ti is not None and len(parts) > ti + 3:
-                filename = parts[ti + 3]
-        if not filename and "/wikipedia/commons/" in path:
-            filename = path.split("/")[-1]
-        if not filename:
-            return url
-        filename = unquote(filename)
-        filename = filename.split("?")[0].split("#")[0].strip()
-        if not filename:
-            return url
-        return f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(filename)}?width={int(width)}"
-    except Exception:
-        return url
-
-
 def make_placeholder_image(out_path: Path, text_msg: str) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     w, h = 1080, 1080
@@ -902,10 +880,6 @@ def make_placeholder_image(out_path: Path, text_msg: str) -> None:
         draw.text(((w - tw) // 2, y), ln, font=font, fill=(235, 235, 235))
         y += 70
     img.save(out_path, quality=92)
-
-
-def cache_key_for_url(url: str) -> str:
-    return hashlib.sha256(url.encode("utf-8")).hexdigest()[:16]
 
 
 def download_image(url: str, out_path: Path) -> bool:
@@ -962,75 +936,6 @@ def download_image(url: str, out_path: Path) -> bool:
     except Exception:
         pass
     return False
-
-
-def media_provider_for_url(url: Optional[str]) -> str:
-    if not url:
-        return "placeholder"
-    host = (urlparse(url).netloc or "").lower()
-    if "wikimedia.org" in host or "wikipedia.org" in host:
-        return "wikimedia"
-    if "pexels.com" in host or "pexels" in host:
-        return "pexels"
-    if "pixabay.com" in host or "pixabay" in host:
-        return "pixabay"
-    return "unknown"
-
-
-def media_attribution_entry(
-    scene_idx: int,
-    image_file: str,
-    image_url: Optional[str],
-    selection: str,
-    query: str,
-) -> Dict[str, Any]:
-    return {
-        "scene_idx": int(scene_idx),
-        "image_file": image_file,
-        "image_url": image_url,
-        "provider": media_provider_for_url(image_url),
-        "selection": selection,
-        "query": query,
-        "license_review_required": True,
-    }
-
-
-def write_media_attribution(path: Path, entries: List[Dict[str, Any]], dry_run: bool = False) -> None:
-    payload = {
-        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "dry_run": bool(dry_run),
-        "review_note": "Review provider terms and source licenses before publishing generated media.",
-        "images": entries,
-    }
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def attribution_entries_from_script(
-    scenes: List[Dict],
-    cand_urls: List[str],
-    map_url: Optional[str],
-    title_en: str,
-) -> List[Dict[str, Any]]:
-    entries: List[Dict[str, Any]] = []
-    for i, sc in enumerate(scenes, start=1):
-        idx = int(sc.get("idx", i))
-        kw = (sc.get("image_keywords_en") or "").strip()
-        query = kw or title_en
-        image_idx = 0
-        try:
-            image_idx = int(sc.get("image_idx") or 0)
-        except Exception:
-            image_idx = 0
-        img_url: Optional[str] = None
-        selection = "placeholder"
-        if 1 <= image_idx <= len(cand_urls):
-            img_url = cand_urls[image_idx - 1]
-            selection = "script_image_idx"
-        if map_url and idx == 1 and cand_urls:
-            img_url = cand_urls[0]
-            selection = "map_first_scene"
-        entries.append(media_attribution_entry(idx, f"images/{idx:02d}.jpg", img_url, selection, query))
-    return entries
 
 
 def load_font(size: int) -> ImageFont.FreeTypeFont:
@@ -1443,25 +1348,6 @@ def mux_audio_and_bgm(ffmpeg: str, video_in: Path, voice_wav_norm: Path, out_mp4
 # =========================
 # 자막
 # =========================
-def fmt_ass_time(t: float) -> str:
-    if t < 0:
-        t = 0.0
-    h = int(t // 3600)
-    m = int((t % 3600) // 60)
-    s = int(t % 60)
-    cs = int(round((t - int(t)) * 100))
-    if cs >= 100:
-        cs = 99
-    return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
-
-
-def ass_escape(s: str) -> str:
-    s = (s or "").replace("\r", " ").replace("\n", " ")
-    s = re.sub(r"\s+", " ", s).strip()
-    s = s.replace("\\", r"\\").replace("{", r"\{").replace("}", r"\}")
-    return s
-
-
 def split_korean_caption_chunks(text: str, max_len: int = 20) -> List[str]:
     t = re.sub(r"\s+", " ", (text or "").strip())
     if not t:
@@ -1523,37 +1409,6 @@ def split_korean_caption_chunks(text: str, max_len: int = 20) -> List[str]:
         else:
             cleaned.append(c)
     return cleaned
-
-
-def allocate_chunk_times(scene_dur: float, chunks: List[str], min_chunk: float = 0.45) -> List[float]:
-    if not chunks:
-        return []
-    max_chunks = max(1, int(scene_dur / min_chunk))
-    if len(chunks) > max_chunks:
-        merged = []
-        buf = ""
-        for c in chunks:
-            if not buf:
-                buf = c
-            elif len(merged) + 1 < max_chunks:
-                merged.append(buf)
-                buf = c
-            else:
-                buf = (buf + " " + c).strip()
-        if buf:
-            merged.append(buf)
-        chunks = merged
-    weights = [max(1, len(re.sub(r"\s+", "", c))) for c in chunks]
-    total = float(sum(weights))
-    times = [scene_dur * (w / total) for w in weights]
-    times = [max(min_chunk, t) for t in times]
-    s = sum(times)
-    if s > 0:
-        scale = scene_dur / s
-        times = [t * scale for t in times]
-    diff = scene_dur - sum(times)
-    times[-1] += diff
-    return times
 
 
 def write_ass_subtitles_sentence_style(ass_path: Path, scenes: List[Dict], durations: List[float]) -> None:
