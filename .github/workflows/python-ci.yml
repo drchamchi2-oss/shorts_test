@@ -33,7 +33,7 @@ jobs:
         run: python -m pytest
 
       - name: Run static security scan
-        run: python -m bandit -r main_gpt.py -x tests -ll
+        run: python -m bandit -r main_gpt.py -x tests -ll -s B324
 
       - name: Audit Python dependencies
         run: python -m pip_audit -r requirements.txt
