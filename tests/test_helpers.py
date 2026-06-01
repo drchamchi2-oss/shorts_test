@@ -28,3 +28,7 @@ def test_caption_chunks_are_trimmed_and_non_empty():
     assert chunks
     assert all(chunk == chunk.strip() for chunk in chunks)
     assert all(chunk for chunk in chunks)
+
+
+def test_cache_key_for_url_is_sha256_prefix():
+    assert main_gpt.cache_key_for_url("https://example.com/image.jpg") == "e5db82b5bf63d49d"
