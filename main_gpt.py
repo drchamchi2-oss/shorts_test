@@ -964,6 +964,75 @@ def download_image(url: str, out_path: Path) -> bool:
     return False
 
 
+def media_provider_for_url(url: Optional[str]) -> str:
+    if not url:
+        return "placeholder"
+    host = (urlparse(url).netloc or "").lower()
+    if "wikimedia.org" in host or "wikipedia.org" in host:
+        return "wikimedia"
+    if "pexels.com" in host or "pexels" in host:
+        return "pexels"
+    if "pixabay.com" in host or "pixabay" in host:
+        return "pixabay"
+    return "unknown"
+
+
+def media_attribution_entry(
+    scene_idx: int,
+    image_file: str,
+    image_url: Optional[str],
+    selection: str,
+    query: str,
+) -> Dict[str, Any]:
+    return {
+        "scene_idx": int(scene_idx),
+        "image_file": image_file,
+        "image_url": image_url,
+        "provider": media_provider_for_url(image_url),
+        "selection": selection,
+        "query": query,
+        "license_review_required": True,
+    }
+
+
+def write_media_attribution(path: Path, entries: List[Dict[str, Any]], dry_run: bool = False) -> None:
+    payload = {
+        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "dry_run": bool(dry_run),
+        "review_note": "Review provider terms and source licenses before publishing generated media.",
+        "images": entries,
+    }
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def attribution_entries_from_script(
+    scenes: List[Dict],
+    cand_urls: List[str],
+    map_url: Optional[str],
+    title_en: str,
+) -> List[Dict[str, Any]]:
+    entries: List[Dict[str, Any]] = []
+    for i, sc in enumerate(scenes, start=1):
+        idx = int(sc.get("idx", i))
+        kw = (sc.get("image_keywords_en") or "").strip()
+        query = kw or title_en
+        image_idx = 0
+        try:
+            image_idx = int(sc.get("image_idx") or 0)
+        except Exception:
+            image_idx = 0
+        img_url: Optional[str] = None
+        selection = "placeholder"
+        if 1 <= image_idx <= len(cand_urls):
+            img_url = cand_urls[image_idx - 1]
+            selection = "script_image_idx"
+        if map_url and idx == 1 and cand_urls:
+            img_url = cand_urls[0]
+            selection = "map_first_scene"
+        entries.append(media_attribution_entry(idx, f"images/{idx:02d}.jpg", img_url, selection, query))
+    return entries
+
+
 def load_font(size: int) -> ImageFont.FreeTypeFont:
     candidates = [
         FONT_DIR / "GmarketSansTTFBold.ttf",
@@ -1616,7 +1685,7 @@ def generate_script(client: OpenAI, title_en: str, wiki_text: str, verbose: bool
     return ensure_script_constraints(client, title_en, wiki_text, verbose, cand_urls)
 
 
-def pipeline_run(base_dir: Path, out_dir: Path, ffmpeg_path: Optional[str], verbose: bool) -> Tuple[Path, Path]:
+def pipeline_run(base_dir: Path, out_dir: Path, ffmpeg_path: Optional[str], verbose: bool, dry_run: bool = False) -> Tuple[Path, Path]:
     global VERBOSE
     VERBOSE = bool(verbose)
     if load_dotenv:
@@ -1627,8 +1696,8 @@ def pipeline_run(base_dir: Path, out_dir: Path, ffmpeg_path: Optional[str], verb
         raise RuntimeError("OPENAI_API_KEY가 없습니다(.env 또는 환경변수).")
     pexels_key = (os.getenv("PEXELS_API_KEY") or "").strip() or None
     pixabay_key = (os.getenv("PIXABAY_API_KEY") or "").strip() or None
-    ffmpeg = which_ffmpeg(ffmpeg_path)
-    if not BGM_FIXED.exists():
+    ffmpeg = None if dry_run else which_ffmpeg(ffmpeg_path)
+    if not dry_run and not BGM_FIXED.exists():
         raise FileNotFoundError(f"요청하신 bgm(mystery.mp3)을 찾지 못했습니다: {BGM_FIXED}")
     sp = load_feedback()
     log(f"시작 (성우={TTS_VOICE}, 배속={VOICE_SPEED}, 씬={MIN_SCENES}~{MAX_SCENES})")
@@ -1680,9 +1749,16 @@ def pipeline_run(base_dir: Path, out_dir: Path, ffmpeg_path: Optional[str], verb
         scenes = script.get("scenes", [])
     workdir = make_out_dir(out_dir, title_en)
     log(f"저장 폴더: {workdir}")
+    if dry_run:
+        (workdir / "script.json").write_text(json.dumps(script, ensure_ascii=False, indent=2), encoding="utf-8")
+        entries = attribution_entries_from_script(scenes, cand_urls, map_url, title_en)
+        write_media_attribution(workdir / "media_attribution.json", entries, dry_run=True)
+        log("dry-run completed: script.json + media_attribution.json")
+        return workdir / "script.json", workdir
     scene_mp4s: List[Path] = []
     scene_wavs: List[Path] = []
     durations: List[float] = []
+    media_entries: List[Dict[str, Any]] = []
     log(f"씬 생성({len(scenes)}개)...")
     for i, sc in enumerate(scenes, start=1):
         idx = int(sc.get("idx", i))
@@ -1693,16 +1769,22 @@ def pipeline_run(base_dir: Path, out_dir: Path, ffmpeg_path: Optional[str], verb
             image_idx = int(sc.get("image_idx") or 0)
         except Exception:
             image_idx = 0
+        selection = "placeholder"
         if 1 <= image_idx <= len(cand_urls):
             img_url = cand_urls[image_idx - 1]
+            selection = "script_image_idx"
         if map_url and idx == 1 and len(cand_urls) >= 1:
             img_url = cand_urls[0]
+            selection = "map_first_scene"
         if not img_url:
             q = kw or title_en
             img_url = commons_search_file_thumb(q, width=1280, verbose=verbose)
+            selection = "commons_search" if img_url else "stock_fallback"
             if not img_url:
                 img_url = pick_best_stock_image(pexels_key, pixabay_key, kw or title_en, verbose)
+                selection = "stock_fallback" if img_url else "placeholder"
         img_path = workdir / "images" / f"{idx:02d}.jpg"
+        media_entries.append(media_attribution_entry(idx, f"images/{idx:02d}.jpg", img_url, selection, kw or title_en))
         if img_url:
             download_image(img_url, img_path)
         else:
@@ -1735,6 +1817,7 @@ def pipeline_run(base_dir: Path, out_dir: Path, ffmpeg_path: Optional[str], verb
     final = workdir / "final.mp4"
     burn_subtitles_only(ffmpeg, mixed, ass_path, final, verbose)
     (workdir / "script.json").write_text(json.dumps(script, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_media_attribution(workdir / "media_attribution.json", media_entries, dry_run=False)
     total = duration_seconds(ffmpeg, final)
     log(f"완료: final.mp4 (길이 {total:.1f}초)")
     if not (TARGET_MIN <= total <= TARGET_MAX):
@@ -1751,6 +1834,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--base_dir", default=str(BASE_DIR))
     p.add_argument("--out_dir", default=str(OUT_DIR))
     p.add_argument("--ffmpeg_path", default=None)
+    p.add_argument("--dry_run", action="store_true", help="Generate script and media attribution metadata without rendering media.")
     p.add_argument("--verbose", action="store_true")
     return p
 
@@ -1759,8 +1843,12 @@ def main() -> None:
     args = build_parser().parse_args()
     workdir: Optional[Path] = None
     try:
-        final, workdir = pipeline_run(Path(args.base_dir), Path(args.out_dir), args.ffmpeg_path, args.verbose)
-        cleanup_success(workdir)
+        final, workdir = pipeline_run(Path(args.base_dir), Path(args.out_dir), args.ffmpeg_path, args.verbose, dry_run=args.dry_run)
+        if args.dry_run:
+            log("dry-run output kept: script.json + media_attribution.json")
+            return
+        else:
+            cleanup_success(workdir)
         log("정리 완료: final.mp4 + script.json + images만 남겼습니다.")
     except Exception as e:
         log(str(e), level="ERROR")
