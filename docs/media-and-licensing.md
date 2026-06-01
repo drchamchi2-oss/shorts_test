@@ -14,6 +14,7 @@ This project intentionally keeps generated videos, local background music, local
 Before publishing a generated video, review:
 
 - The generated Korean script for factual accuracy and unsupported claims.
+- `media_attribution.json`, including image URLs, providers, selection reasons, and license-review flags.
 - Image source pages and license requirements.
 - BGM and sound-effect rights.
 - Whether any generated narration or overlay text implies certainty beyond the source material.
