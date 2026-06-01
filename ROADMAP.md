@@ -9,9 +9,12 @@ This roadmap tracks near-term work that keeps `shorts_test` useful, testable, an
 - Make media attribution and licensing review easier before generated videos are published.
 - Expand pure helper tests before larger refactors.
 
+## Completed
+
+- [#9](https://github.com/drchamchi2-oss/shorts_test/issues/9): Migrated URL cache keys to SHA256 and removed the Bandit B324 skip.
+
 ## Near-Term Issues
 
-- [#9](https://github.com/drchamchi2-oss/shorts_test/issues/9): Migrate URL cache keys to SHA256 and remove Bandit B324 skip.
 - [#10](https://github.com/drchamchi2-oss/shorts_test/issues/10): Add fixture-based tests for subtitle timing edge cases.
 - [#11](https://github.com/drchamchi2-oss/shorts_test/issues/11): Record media provider attribution metadata in generated outputs.
 - [#12](https://github.com/drchamchi2-oss/shorts_test/issues/12): Add dry-run mode for topic and script generation checks.
