@@ -105,6 +105,8 @@ Use `docs/release-checklist.md` before tagging a public release.
 
 This project is early-stage OSS. The current goal is to make the single-file workflow reproducible, inspectable, and easier to maintain.
 
+See `ROADMAP.md` for the current maintenance plan and near-term issues.
+
 Known limitations:
 
 - The script depends on live web APIs and external media sources.

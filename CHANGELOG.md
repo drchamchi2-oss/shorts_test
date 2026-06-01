@@ -12,6 +12,7 @@ All notable changes to this project are documented here.
 - GitHub Actions CI with syntax checks, tests, Bandit static security scanning, and pip-audit dependency auditing.
 - Release checklist and media/licensing guidance.
 - Local doctor script for runtime prerequisite checks.
+- Public roadmap for near-term maintenance issues.
 - Helper-function tests for path, JSON, and caption behavior.
 
 ### Security
