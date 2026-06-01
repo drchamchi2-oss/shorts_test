@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Generated output and caches
+out_araboza/
+oparts_feedback.json
+_cache/
+*.concat.txt
+*.raw.mp3
+*.tmp.wav
+*.lead.wav
+
+# Local media/assets that may have separate licenses
+bgm_no_attrib/*.mp3
+bgm_no_attrib/*.wav
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
