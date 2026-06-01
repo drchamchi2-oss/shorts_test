@@ -1,6 +1,6 @@
 # Codex OSS Application Draft
 
-This draft is intentionally conservative. Replace or remove any assumption that is not true before submitting. Do not claim usage, adoption, maintainer status, or security relevance that cannot be verified.
+This draft is intentionally conservative. Keep private applicant details out of public repository files. The actual application values should be stored outside the repository or entered directly into the OpenAI form.
 
 ## Recommended Decisions
 
@@ -9,40 +9,28 @@ This draft is intentionally conservative. Replace or remove any assumption that 
 - License recommendation: MIT, using `LICENSE-MIT.draft` as the starting point.
 - Submission status: HOLD until the repository is public and the draft placeholders are replaced with true project details.
 
-## Current Known Facts
+## Public Repository Facts
 
-- Applicant last name: Kim
-- Applicant first name: hyosung
-- ChatGPT account email: drchamchi2@gmail.com
 - GitHub username: `drchamchi2-oss`
 - Repository: `drchamchi2-oss/shorts_test`
+- Repository URL after public release: `https://github.com/drchamchi2-oss/shorts_test`
 - Current repository visibility when checked: private
 - Public repositories visible on the profile when checked: 0
 - Current README on `main`: minimal placeholder content
 - Applicant has repository owner/admin-level access through the connected GitHub account.
 
-## Required Fields
+## Required Application Fields
 
 ```text
-Last name: Kim
-First name: hyosung
-ChatGPT account email: drchamchi2@gmail.com
+Last name: [enter in the OpenAI form]
+First name: [enter in the OpenAI form]
+ChatGPT account email: [enter in the OpenAI form; do not publish in the repo]
 GitHub username: drchamchi2-oss
 GitHub repository URL: https://github.com/drchamchi2-oss/shorts_test
 Role: Primary maintainer / repository owner
 Interested in: ChatGPT Pro with Codex, API credits, and Codex Security after public repository readiness
-OpenAI organization ID: [copy from platform.openai.com/settings/organization/general]
+OpenAI organization ID: [enter in the OpenAI form; do not publish in the repo]
 ```
-
-## How To Find The OpenAI Organization ID
-
-1. Sign in with `drchamchi2@gmail.com` at https://platform.openai.com/
-2. Open https://platform.openai.com/settings/organization/general
-3. Look for the organization ID on the Organization > General settings page.
-4. It usually looks like `org-...`.
-5. If multiple organizations exist, use the one that should receive API credits.
-
-Official help pages say the organization ID is unique and cannot be changed, and organization settings live under the API platform organization settings page.
 
 ## 500 Character Draft: Why This Repository Fits
 
