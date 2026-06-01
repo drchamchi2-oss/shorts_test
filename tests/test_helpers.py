@@ -19,6 +19,13 @@ def test_safe_json_loads_accepts_fenced_json_with_trailing_comma():
     assert main_gpt.safe_json_loads('```json\n{"value": 1,}\n```') == {"value": 1}
 
 
+def test_cache_key_for_url_is_sha256_prefix():
+    key = main_gpt.cache_key_for_url("https://example.com/image.jpg")
+
+    assert key == "e5db82b5bf63d49d"
+    assert len(key) == 16
+
+
 def test_caption_chunks_are_trimmed_and_non_empty():
     chunks = main_gpt.split_korean_caption_chunks(
         "This is a first caption sentence. This is a second caption sentence.",
