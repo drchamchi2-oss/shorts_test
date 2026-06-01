@@ -27,6 +27,12 @@ Install Python dependencies:
 python -m pip install -r requirements.txt
 ```
 
+For development and CI-equivalent checks:
+
+```bash
+python -m pip install -r requirements-dev.txt
+```
+
 Create a local `.env` file from the example:
 
 ```bash
@@ -49,6 +55,21 @@ python main_gpt.py run --ffmpeg_path C:\ffmpeg\bin\ffmpeg.exe --verbose
 
 Generated files are written under `out_araboza/`.
 
+## Development Checks
+
+Run the local checks before opening a pull request:
+
+```bash
+python -m py_compile main_gpt.py
+python -m pytest
+python -m bandit -r main_gpt.py -x tests -ll -s B324
+python -m pip_audit -r requirements.txt
+```
+
+Bandit check `B324` is skipped because the current SHA1 use is a non-security cache key. Keep the skip visible and remove it when the cache key is migrated to SHA256.
+
+The GitHub Actions workflow runs the same syntax, test, static security, and dependency-audit checks on pull requests and pushes to `main`.
+
 ## Configuration
 
 Required environment variable:
@@ -69,6 +90,10 @@ The repository intentionally does not include private keys, generated videos, lo
 ## Media And Licensing
 
 Review `docs/media-and-licensing.md` before publishing generated videos or adding new media providers.
+
+## Releases
+
+Use `docs/release-checklist.md` before tagging a public release.
 
 ## Project Status
 
