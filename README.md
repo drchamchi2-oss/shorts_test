@@ -66,6 +66,10 @@ PIXABAY_API_KEY=your_pixabay_api_key
 
 The repository intentionally does not include private keys, generated videos, local cache files, or BGM assets. Use only media that you are allowed to use and redistribute.
 
+## Media And Licensing
+
+Review `docs/media-and-licensing.md` before publishing generated videos or adding new media providers.
+
 ## Project Status
 
 This project is early-stage OSS. The current goal is to make the single-file workflow reproducible, inspectable, and easier to maintain.
