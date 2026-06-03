@@ -1,5 +1,8 @@
 # shorts_test
 
+[![Python CI](https://github.com/drchamchi2-oss/shorts_test/actions/workflows/python-ci.yml/badge.svg)](https://github.com/drchamchi2-oss/shorts_test/actions/workflows/python-ci.yml)
+[![CodeQL](https://github.com/drchamchi2-oss/shorts_test/actions/workflows/codeql.yml/badge.svg)](https://github.com/drchamchi2-oss/shorts_test/actions/workflows/codeql.yml)
+
 `shorts_test` is a Python pipeline for generating Korean short-form videos about ancient artifacts, archaeological sites, and ancient-civilization mysteries.
 
 The script builds a roughly 60-second vertical video by selecting a topic from public web sources, drafting a Korean narration with OpenAI, collecting public-source imagery, generating TTS audio, rendering scenes with ffmpeg, burning subtitles, and cleaning intermediate files.
@@ -66,9 +69,9 @@ Generated files are written under `out_araboza/`. Full runs write `final.mp4`, `
 Run the local checks before opening a pull request:
 
 ```bash
-python -m py_compile main_gpt.py scripts/doctor.py
+python -m py_compile main_gpt.py shorts_media.py shorts_rendering.py scripts/doctor.py
 python -m pytest
-python -m bandit -r main_gpt.py scripts -x tests -ll
+python -m bandit -r main_gpt.py shorts_media.py shorts_rendering.py scripts -x tests -ll
 python -m pip_audit -r requirements.txt
 ```
 
