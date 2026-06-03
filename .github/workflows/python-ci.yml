@@ -27,13 +27,13 @@ jobs:
         run: python -m pip install -r requirements-dev.txt
 
       - name: Compile main script
-        run: python -m py_compile main_gpt.py scripts/doctor.py
+        run: python -m py_compile main_gpt.py shorts_media.py shorts_rendering.py scripts/doctor.py
 
       - name: Run tests
         run: python -m pytest
 
       - name: Run static security scan
-        run: python -m bandit -r main_gpt.py scripts -x tests -ll
+        run: python -m bandit -r main_gpt.py shorts_media.py shorts_rendering.py scripts -x tests -ll
 
       - name: Audit Python dependencies
         run: python -m pip_audit -r requirements.txt
